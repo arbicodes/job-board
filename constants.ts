@@ -4,8 +4,7 @@ import { Job } from './types';
 export const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxK004p_RekpRCKsqCaFjnqYPSEjQjmH6KhgGz0zRpavbxMXgEPKnN5KFq5SK9tV9XM/exec';
 
 // Single Cozy Image
-// NOTE: You must download the image and save it to /assets/cozy-cat.jpg in your public folder
-export const DEFAULT_JOB_IMAGE = '/assets/cozy-cat.jpg';
+export const DEFAULT_JOB_IMAGE = 'https://i.ibb.co/JwyPrcF5/c01c43422cde952dd3ced914dfb14aba.jpg';
 
 export const MOCK_JOBS: Job[] = [
   {
