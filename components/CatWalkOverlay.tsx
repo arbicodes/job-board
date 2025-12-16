@@ -16,14 +16,16 @@ const CatWalkOverlay: React.FC = () => {
   const lastSpawnRef = useRef(0);
 
   useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (e.clientX > 48) return;
+    const handleTrigger = (clientX: number, clientY: number) => {
+      // Slightly wider "secret" area so it's actually hittable on mobile + with page padding
+      if (clientX > 140) return;
 
       const now = Date.now();
-      clickBufferRef.current = clickBufferRef.current.filter(c => now - c.t < 700);
-      clickBufferRef.current.push({ t: now, y: e.clientY });
+      clickBufferRef.current = clickBufferRef.current.filter(c => now - c.t < 900);
+      clickBufferRef.current.push({ t: now, y: clientY });
 
-      if (clickBufferRef.current.length < 6) return;
+      // Lower threshold so it triggers reliably without needing superhuman CPS
+      if (clickBufferRef.current.length < 4) return;
       if (now - lastSpawnRef.current < 1200) return;
 
       lastSpawnRef.current = now;
@@ -48,8 +50,20 @@ const CatWalkOverlay: React.FC = () => {
       }, durationMs + 250);
     };
 
+    const handlePointerDown = (e: PointerEvent) => {
+      handleTrigger(e.clientX, e.clientY);
+    };
+
+    const handleClick = (e: MouseEvent) => {
+      handleTrigger(e.clientX, e.clientY);
+    };
+
+    window.addEventListener('pointerdown', handlePointerDown);
     window.addEventListener('click', handleClick);
-    return () => window.removeEventListener('click', handleClick);
+    return () => {
+      window.removeEventListener('pointerdown', handlePointerDown);
+      window.removeEventListener('click', handleClick);
+    };
   }, []);
 
   return (
