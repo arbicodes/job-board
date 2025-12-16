@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cozy Job Board</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --cozy-bg: #FDFBF7;
+        --cozy-card: #FFFFFF;
+        --cozy-text: #5D5650;
+        --cozy-primary: #78716C;
+        --cozy-paper: #FFFCF5;
+        --cozy-border: #E7E5E4;
+      }
+      /* Dark Mode: Deep, matte earth tones. Cozy Night Theme. */
+      .dark {
+        --cozy-bg: #120F0D; /* Very dark warm espresso */
+        --cozy-card: #1C1917; /* Warm dark charcoal */
+        --cozy-text: #E7E5E4; /* Warm Stone 200 */
+        --cozy-primary: #A8A29E; /* Stone 400 */
+        --cozy-paper: #1C1917; /* Seamless card look */
+        --cozy-border: #352F2B; /* Subtle warm border */
+      }
+      
+      body {
+        background-color: var(--cozy-bg);
+        color: var(--cozy-text);
+        transition: background-color 0.3s, color 0.3s;
+        position: relative;
+      }
+
+      /* Paper Grain Texture Overlay */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: -50;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        opacity: 0.04;
+      }
+
+      .dark body::before {
+        opacity: 0.05; /* Slightly reduced opacity for cleaner dark mode */
+        filter: invert(0.8) sepia(0.2); /* Warm tint to the grain */
+      }
+      
+      /* Custom scrollbar for a softer look */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--cozy-bg); 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #D6D3D1; 
+        border-radius: 4px;
+      }
+      .dark ::-webkit-scrollbar-thumb {
+        background: #44403c;
+      }
+    </style>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Quicksand', 'sans-serif'],
+              hand: ['Patrick Hand', 'cursive'],
+            },
+            colors: {
+              cozy: {
+                bg: 'var(--cozy-bg)', 
+                card: 'var(--cozy-card)',
+                text: 'var(--cozy-text)', 
+                accent: '#E7E5E4', // Stone 200
+                primary: 'var(--cozy-primary)',
+                sage: '#E3EEDD', // Soft green
+                sageDark: '#4F772D', // Darker green for text
+                peach: '#FFE5D9', // Soft peach
+                peachDark: '#9A5B4A', // Darker peach for text
+                lavender: '#F3E5F5', // Soft purple
+                clay: '#E7D7C1', // Warm beige
+                paper: 'var(--cozy-paper)',
+                border: 'var(--cozy-border)',
+              }
+            },
+            boxShadow: {
+              'soft': '0 4px 20px -2px rgba(231, 215, 193, 0.4)', // Warm shadow light mode
+              'none-dark': 'none', // Flatten shadows in dark mode
+            }
+          }
+        }
+      }
+    </script>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "lucide-react": "https://esm.sh/lucide-react@^0.561.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.33.0",
+    "vite": "https://esm.sh/vite@^7.3.0",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
