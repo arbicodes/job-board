@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Job } from '../types';
 import { DEFAULT_JOB_IMAGE } from '../constants';
-import { Clock, Sparkles, MoreHorizontal, Edit2, Trash2, Mail, PartyPopper, Calendar, Ghost, AlertCircle } from 'lucide-react';
+import { Clock, Sparkles, MoreHorizontal, Edit2, Trash2, Mail, PartyPopper, Calendar, Ghost, CheckCircle } from 'lucide-react';
 
 interface JobCardProps {
   job: Job;
@@ -33,64 +33,72 @@ const JobCard: React.FC<JobCardProps> = ({ job, onClick, onEdit, onDelete }) => 
   };
 
   // Helper to determine status styling and icon
-  const getStatusBadge = () => {
-    // Check response column first, as it overrides applied status in logic
-    const response = (job.response || '').toLowerCase().trim();
-
-    if (response.includes('waiting')) {
+  const getApplicationBadge = () => {
+    if (job.applied === 'yes') {
       return (
-        <span className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200 dark:border dark:border-amber-800/50 px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm dark:shadow-none">
-           <Clock className="w-3.5 h-3.5" /> WAITING T-T
+        <span className="bg-cozy-sage/60 text-cozy-sageDark dark:bg-emerald-900/25 dark:text-emerald-200 dark:border dark:border-emerald-800/50 px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm dark:shadow-none whitespace-nowrap">
+          <CheckCircle className="w-3.5 h-3.5" /> Applied
         </span>
       );
     }
-    
+
+    return (
+      <span className="bg-cozy-peach/50 text-cozy-peachDark dark:bg-orange-900/20 dark:text-orange-200 dark:border dark:border-orange-800/50 px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm dark:shadow-none whitespace-nowrap">
+        <Sparkles className="w-3.5 h-3.5 text-orange-400 dark:text-orange-200" /> Ready to Apply
+      </span>
+    );
+  };
+
+  const getResponseBadge = () => {
+    if (job.applied !== 'yes') return null;
+
+    const responseLabel = (job.response || '').trim() || 'WAITING T-T';
+    const response = responseLabel.toLowerCase();
+
+    if (response.includes('waiting')) {
+      return (
+        <span title={responseLabel} className="bg-amber-100 text-amber-800 dark:bg-amber-900/25 dark:text-amber-200 dark:border dark:border-amber-800/50 px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm dark:shadow-none whitespace-nowrap min-w-0">
+          <Clock className="w-3.5 h-3.5" /> {responseLabel}
+        </span>
+      );
+    }
+
     if (response.includes('confirmation')) {
       return (
-        <span className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-200 dark:border dark:border-purple-800/50 px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm dark:shadow-none">
-           <Mail className="w-3.5 h-3.5" /> Email Received
+        <span title={responseLabel} className="bg-purple-100 text-purple-800 dark:bg-purple-900/25 dark:text-purple-200 dark:border dark:border-purple-800/50 px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm dark:shadow-none whitespace-nowrap min-w-0">
+          <Mail className="w-3.5 h-3.5" /> {responseLabel}
         </span>
       );
     }
 
     if (response.includes('rejection')) {
-       return (
-        <span className="bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-200 dark:border dark:border-rose-800/50 px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm dark:shadow-none">
-           <Ghost className="w-3.5 h-3.5" /> Rejection
+      return (
+        <span title={responseLabel} className="bg-rose-100 text-rose-800 dark:bg-rose-900/25 dark:text-rose-200 dark:border dark:border-rose-800/50 px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm dark:shadow-none whitespace-nowrap min-w-0">
+          <Ghost className="w-3.5 h-3.5" /> {responseLabel}
         </span>
       );
     }
 
     if (response.includes('interview')) {
       return (
-        <span className="bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-200 dark:border dark:border-sky-800/50 px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm dark:shadow-none">
-           <Calendar className="w-3.5 h-3.5" /> Interview!
+        <span title={responseLabel} className="bg-sky-100 text-sky-800 dark:bg-sky-900/25 dark:text-sky-200 dark:border dark:border-sky-800/50 px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm dark:shadow-none whitespace-nowrap min-w-0">
+          <Calendar className="w-3.5 h-3.5" /> {responseLabel}
         </span>
       );
     }
 
     if (response.includes('acceptance')) {
       return (
-        <span className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200 dark:border dark:border-emerald-800/50 px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm dark:shadow-none">
-           <PartyPopper className="w-3.5 h-3.5" /> Acceptance!
+        <span title={responseLabel} className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/25 dark:text-emerald-200 dark:border dark:border-emerald-800/50 px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm dark:shadow-none whitespace-nowrap min-w-0">
+          <PartyPopper className="w-3.5 h-3.5" /> {responseLabel}
         </span>
       );
     }
 
-    // Default States if no response text match
-    if (job.applied === 'yes') {
-         return (
-            <span className="bg-cozy-sage/60 text-cozy-sageDark dark:bg-green-900/30 dark:text-green-200 dark:border dark:border-green-800/50 px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm dark:shadow-none">
-            <Clock className="w-3.5 h-3.5" /> {job.response || 'Applied'}
-            </span>
-        );
-    }
-
-    // Not applied
     return (
-        <span className="bg-cozy-peach/50 text-stone-600 dark:bg-orange-900/20 dark:text-orange-200 dark:border dark:border-orange-800/50 px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm dark:shadow-none">
-           <Sparkles className="w-3.5 h-3.5 text-orange-400 dark:text-orange-200" /> Ready to apply
-        </span>
+      <span title={responseLabel} className="bg-stone-100 text-stone-700 dark:bg-stone-800/60 dark:text-stone-200 dark:border dark:border-stone-700 px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm dark:shadow-none whitespace-nowrap min-w-0">
+        {responseLabel}
+      </span>
     );
   };
 
@@ -144,8 +152,10 @@ const JobCard: React.FC<JobCardProps> = ({ job, onClick, onEdit, onDelete }) => 
             <h3 className="text-cozy-primary text-xs font-bold uppercase tracking-widest mb-1">{job.company}</h3>
             <h2 className="text-xl sm:text-2xl font-bold text-cozy-text group-hover:text-stone-900 dark:group-hover:text-stone-200 font-sans">{job.position}</h2>
           </div>
-          
-          {getStatusBadge()}
+          <div className="flex items-center gap-2 flex-nowrap overflow-hidden max-w-full">
+            {getApplicationBadge()}
+            <span className="min-w-0 max-w-[12rem] sm:max-w-[16rem] truncate">{getResponseBadge()}</span>
+          </div>
         </div>
         
         <div className="h-px w-full bg-gradient-to-r from-stone-100 dark:from-stone-800 to-transparent my-3" />
@@ -155,8 +165,16 @@ const JobCard: React.FC<JobCardProps> = ({ job, onClick, onEdit, onDelete }) => 
             <Clock className="w-4 h-4" />
             <span>{job.employmentType}</span>
           </div>
-          <span className="hidden sm:inline text-stone-300 dark:text-stone-600">•</span>
-          <span className="text-stone-400 dark:text-stone-500 font-hand text-lg">Posted {job.datePosted}</span>
+
+          {job.dateApplied ? (
+            <>
+              <span className="hidden sm:inline text-stone-300 dark:text-stone-600">•</span>
+              <div className="flex items-center gap-1.5 text-stone-400 dark:text-stone-500 font-hand text-lg">
+                <Calendar className="w-4 h-4" />
+                <span>Applied {job.dateApplied}</span>
+              </div>
+            </>
+          ) : null}
         </div>
       </div>
     </div>

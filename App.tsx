@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Job, ViewState } from './types';
 import { GOOGLE_SCRIPT_URL } from './constants';
-import { fetchJobsFromSheet, postJobToSheet, deleteJobFromSheet, generateJobId, formatBenefitsForSheet } from './services/sheets.ts';
+import { fetchJobsFromSheet, postJobToSheet, updateJobInSheet, deleteJobFromSheet, generateJobId, formatBenefitsForSheet } from './services/sheets.ts';
+import { todayMMDDYY, parseMMDDYYToTime } from './utils/date';
 import Sidebar from './components/Sidebar';
 import JobCard from './components/JobCard';
 import JobDetail from './components/JobDetail';
 import PostJobModal from './components/PostJobModal';
+import CatWalkOverlay from './components/CatWalkOverlay';
 import { RefreshCw, PenTool, Moon, Sun, Sparkles } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -25,6 +27,9 @@ const App: React.FC = () => {
   // State for editing
   const [editingJob, setEditingJob] = useState<Job | null>(null);
 
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastVariant, setToastVariant] = useState<'success' | 'error'>('success');
+
   // Dark Mode Effect
   useEffect(() => {
     if (darkMode) {
@@ -40,21 +45,42 @@ const App: React.FC = () => {
     loadJobs();
   }, []);
 
-  const loadJobs = async () => {
-    setLoading(true);
+  const refreshJobsFromSheet = async () => {
     const fetchedJobs = await fetchJobsFromSheet(GOOGLE_SCRIPT_URL);
     setJobs(fetchedJobs);
+  };
+
+  const sleep = (ms: number) => new Promise(resolve => window.setTimeout(resolve, ms));
+
+  const refreshJobsUntilJobPresent = async (jobId: string) => {
+    for (let i = 0; i < 4; i++) {
+      const fetched = await fetchJobsFromSheet(GOOGLE_SCRIPT_URL);
+      setJobs(fetched);
+      if (fetched.some(j => j.id === jobId)) return true;
+      await sleep(600);
+    }
+    return false;
+  };
+
+  const loadJobs = async () => {
+    setLoading(true);
+    await refreshJobsFromSheet();
     setLoading(false);
   };
 
   const handlePostJob = async (jobData: Partial<Job>) => {
     setLoading(true);
 
+    const isEditing = !!editingJob;
+
     // Generate ID for new jobs based on content
     const tempId = editingJob ? editingJob.id : generateJobId(jobData.company || '', jobData.position || '');
 
     // Apply formatting to benefits
     const formattedBenefits = formatBenefitsForSheet(jobData.salaryBenefits || '');
+
+    // Apply formatting to notes (same readability treatment)
+    const formattedNotes = formatBenefitsForSheet(jobData.notes || '');
 
     // Create the job object
     const newJob: Job = {
@@ -68,32 +94,51 @@ const App: React.FC = () => {
       response: editingJob ? editingJob.response : 'WAITING T-T',
       predictedPay: jobData.predictedPay || '',
       salaryBenefits: formattedBenefits,
-      notes: jobData.notes || '',
+      notes: formattedNotes,
       employmentType: jobData.employmentType || 'Full-time',
-      datePosted: editingJob ? editingJob.datePosted : new Date().toISOString().split('T')[0]
+      datePosted: editingJob ? editingJob.datePosted : todayMMDDYY()
     };
 
-    // Update local state immediately
-    if (editingJob) {
-      setJobs(prev => prev.map(j => j.id === editingJob.id ? newJob : j));
-      if (selectedJob?.id === editingJob.id) setSelectedJob(newJob);
-    } else {
-      setJobs(prev => [newJob, ...prev]);
-    }
+    try {
+      if (editingJob) {
+        await updateJobInSheet(GOOGLE_SCRIPT_URL, editingJob, newJob);
+      } else {
+        await postJobToSheet(GOOGLE_SCRIPT_URL, newJob, false);
+      }
 
-    // Sync to sheet
-    await postJobToSheet(GOOGLE_SCRIPT_URL, newJob, !!editingJob);
-    
-    setLoading(false);
-    setEditingJob(null);
-    setIsPostModalOpen(false);
+      const exists = await refreshJobsUntilJobPresent(newJob.id);
+      setToastVariant(exists ? 'success' : 'error');
+      setToastMessage(
+        exists
+          ? (isEditing ? 'Job updated!' : 'Job posted!')
+          : 'Posted, but could not confirm from the sheet. Try refresh.'
+      );
+
+      window.setTimeout(() => setToastMessage(null), 3000);
+
+      setEditingJob(null);
+      setIsPostModalOpen(false);
+    } catch {
+      setToastVariant('error');
+      setToastMessage('Could not post job. Please try again.');
+      window.setTimeout(() => setToastMessage(null), 4000);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleUpdateJobDirectly = async (updatedJob: Job) => {
+    setLoading(true);
+
+    const oldJob = jobs.find(j => j.id === updatedJob.id) || updatedJob;
+
     setJobs(prev => prev.map(j => j.id === updatedJob.id ? updatedJob : j));
     if (selectedJob?.id === updatedJob.id) setSelectedJob(updatedJob);
-    
-    await postJobToSheet(GOOGLE_SCRIPT_URL, updatedJob, true);
+
+    await updateJobInSheet(GOOGLE_SCRIPT_URL, oldJob, updatedJob);
+    await refreshJobsFromSheet();
+
+    setLoading(false);
   };
 
   const handleSendToSpreadsheet = async (job: Job) => {
@@ -103,7 +148,7 @@ const App: React.FC = () => {
     const updatedJob: Job = {
       ...job,
       applied: 'yes',
-      dateApplied: new Date().toISOString().split('T')[0],
+      dateApplied: todayMMDDYY(),
       response: 'WAITING T-T'
     };
 
@@ -111,7 +156,9 @@ const App: React.FC = () => {
     setJobs(prev => prev.map(j => j.id === job.id ? updatedJob : j));
     if (selectedJob?.id === job.id) setSelectedJob(updatedJob);
 
-    await postJobToSheet(GOOGLE_SCRIPT_URL, updatedJob, true);
+    await updateJobInSheet(GOOGLE_SCRIPT_URL, job, updatedJob);
+    await refreshJobsFromSheet();
+
     setLoading(false);
   };
 
@@ -124,9 +171,19 @@ const App: React.FC = () => {
   const handleDeleteJobClick = async (e: React.MouseEvent, job: Job) => {
     e.stopPropagation();
     if (confirm(`Are you sure you want to delete the job at ${job.company}?`)) {
+      setLoading(true);
+
+      // Optimistic UI, then refresh from source of truth
       setJobs(prev => prev.filter(j => j.id !== job.id));
-      
+      if (selectedJob?.id === job.id) {
+        setSelectedJob(null);
+        setView('LIST');
+      }
+
       await deleteJobFromSheet(GOOGLE_SCRIPT_URL, job);
+      await refreshJobsFromSheet();
+
+      setLoading(false);
     }
   };
 
@@ -150,8 +207,8 @@ const App: React.FC = () => {
       }
       
       // 2. Date Priority: Newest posted date first
-      const dateA = new Date(a.datePosted).getTime();
-      const dateB = new Date(b.datePosted).getTime();
+      const dateA = parseMMDDYYToTime(a.datePosted);
+      const dateB = parseMMDDYYToTime(b.datePosted);
       return dateB - dateA;
     });
 
@@ -164,7 +221,20 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-cozy-bg font-sans text-cozy-text p-6 sm:p-12 transition-colors duration-300">
+      <CatWalkOverlay />
       <div className="max-w-7xl mx-auto">
+
+        {toastMessage && (
+          <div
+            className={`mb-6 px-5 py-3 rounded-2xl border shadow-soft dark:shadow-none transition-colors ${
+              toastVariant === 'success'
+                ? 'bg-cozy-sage/50 border-cozy-border/70 text-cozy-sageDark dark:bg-stone-800/40 dark:border-cozy-border dark:text-stone-200'
+                : 'bg-rose-50 border-rose-100 text-rose-700 dark:bg-rose-900/20 dark:border-rose-800/40 dark:text-rose-200'
+            }`}
+          >
+            <div className="font-bold">{toastMessage}</div>
+          </div>
+        )}
         
         {/* Header - Minimalist & Cozy */}
         <header className="flex flex-col lg:flex-row justify-between items-center py-8 mb-12 gap-8">
@@ -199,7 +269,7 @@ const App: React.FC = () => {
                 setEditingJob(null);
                 setIsPostModalOpen(true);
               }}
-              className="ml-2 bg-cozy-sage dark:bg-stone-700 text-cozy-sageDark dark:text-stone-200 px-8 py-4 rounded-full font-bold shadow-soft dark:shadow-none hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2.5 font-sans tracking-wide"
+              className="ml-2 bg-cozy-peach/60 hover:bg-cozy-peach/80 dark:bg-stone-800/50 dark:hover:bg-stone-700 text-cozy-peachDark dark:text-stone-200 px-8 py-4 rounded-full font-bold shadow-soft dark:shadow-none hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2.5 font-sans tracking-wide border border-cozy-border/70 dark:border-cozy-border"
             >
               <PenTool className="w-4 h-4 stroke-[2.5]" />
               <span>Post a Job</span>

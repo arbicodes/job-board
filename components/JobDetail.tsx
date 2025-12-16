@@ -22,63 +22,72 @@ const JobDetail: React.FC<JobDetailProps> = ({ job, onBack, onSendToSpreadsheet,
   };
 
   // Helper to determine status styling and icon
-  const getStatusBadge = () => {
-    const response = (job.response || '').toLowerCase().trim();
+  const getApplicationBadge = () => {
+    if (job.applied === 'yes') {
+      return (
+        <span className="inline-flex items-center gap-2 bg-cozy-sage text-cozy-sageDark dark:bg-emerald-900/25 dark:text-emerald-200 dark:border dark:border-emerald-800/50 px-5 py-2 rounded-full text-sm font-bold shadow-sm dark:shadow-none whitespace-nowrap">
+          <CheckCircle className="w-4 h-4" /> Applied
+        </span>
+      );
+    }
+
+    return (
+      <span className="inline-flex items-center gap-2 bg-cozy-peach text-cozy-peachDark dark:bg-orange-900/20 dark:text-orange-200 dark:border dark:border-orange-800/50 px-5 py-2 rounded-full text-sm font-bold shadow-sm dark:shadow-none whitespace-nowrap">
+        <Sparkles className="w-4 h-4" /> Ready to Apply
+      </span>
+    );
+  };
+
+  const getResponseBadge = () => {
+    if (job.applied !== 'yes') return null;
+
+    const responseLabel = (job.response || '').trim() || 'WAITING T-T';
+    const response = responseLabel.toLowerCase();
 
     if (response.includes('waiting')) {
       return (
-        <span className="inline-flex items-center gap-2 bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200 dark:border dark:border-amber-800/50 px-5 py-2 rounded-full text-sm font-bold shadow-sm dark:shadow-none">
-           <Clock className="w-4 h-4" /> WAITING T-T
+        <span className="inline-flex items-center gap-2 bg-amber-100 text-amber-800 dark:bg-amber-900/25 dark:text-amber-200 dark:border dark:border-amber-800/50 px-5 py-2 rounded-full text-sm font-bold shadow-sm dark:shadow-none whitespace-nowrap">
+          <Clock className="w-4 h-4" /> {responseLabel}
         </span>
       );
     }
     
     if (response.includes('confirmation')) {
       return (
-        <span className="inline-flex items-center gap-2 bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-200 dark:border dark:border-purple-800/50 px-5 py-2 rounded-full text-sm font-bold shadow-sm dark:shadow-none">
-           <Mail className="w-4 h-4" /> Email Received
+        <span className="inline-flex items-center gap-2 bg-purple-100 text-purple-800 dark:bg-purple-900/25 dark:text-purple-200 dark:border dark:border-purple-800/50 px-5 py-2 rounded-full text-sm font-bold shadow-sm dark:shadow-none whitespace-nowrap">
+          <Mail className="w-4 h-4" /> {responseLabel}
         </span>
       );
     }
 
     if (response.includes('rejection')) {
-       return (
-        <span className="inline-flex items-center gap-2 bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-200 dark:border dark:border-rose-800/50 px-5 py-2 rounded-full text-sm font-bold shadow-sm dark:shadow-none">
-           <Ghost className="w-4 h-4" /> Rejection
+      return (
+        <span className="inline-flex items-center gap-2 bg-rose-100 text-rose-800 dark:bg-rose-900/25 dark:text-rose-200 dark:border dark:border-rose-800/50 px-5 py-2 rounded-full text-sm font-bold shadow-sm dark:shadow-none whitespace-nowrap">
+          <Ghost className="w-4 h-4" /> {responseLabel}
         </span>
       );
     }
 
     if (response.includes('interview')) {
       return (
-        <span className="inline-flex items-center gap-2 bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-200 dark:border dark:border-sky-800/50 px-5 py-2 rounded-full text-sm font-bold shadow-sm dark:shadow-none">
-           <Calendar className="w-4 h-4" /> Interview!
+        <span className="inline-flex items-center gap-2 bg-sky-100 text-sky-800 dark:bg-sky-900/25 dark:text-sky-200 dark:border dark:border-sky-800/50 px-5 py-2 rounded-full text-sm font-bold shadow-sm dark:shadow-none whitespace-nowrap">
+          <Calendar className="w-4 h-4" /> {responseLabel}
         </span>
       );
     }
 
     if (response.includes('acceptance')) {
       return (
-        <span className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200 dark:border dark:border-emerald-800/50 px-5 py-2 rounded-full text-sm font-bold shadow-sm dark:shadow-none">
-           <PartyPopper className="w-4 h-4" /> Acceptance!
+        <span className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 dark:bg-emerald-900/25 dark:text-emerald-200 dark:border dark:border-emerald-800/50 px-5 py-2 rounded-full text-sm font-bold shadow-sm dark:shadow-none whitespace-nowrap">
+          <PartyPopper className="w-4 h-4" /> {responseLabel}
         </span>
       );
     }
 
-    // Default Applied State
-    if (job.applied === 'yes') {
-        return (
-            <span className="inline-flex items-center gap-2 bg-cozy-sage text-cozy-sageDark dark:bg-green-900/30 dark:text-green-200 dark:border dark:border-green-800/50 px-5 py-2 rounded-full text-sm font-bold shadow-sm dark:shadow-none">
-            <CheckCircle className="w-4 h-4" /> APPLIED ON {job.dateApplied}
-            </span>
-        );
-    }
-    
-    // Not applied
     return (
-        <span className="inline-flex items-center gap-2 bg-cozy-peach text-cozy-peachDark dark:bg-orange-900/20 dark:text-orange-200 dark:border dark:border-orange-800/50 px-5 py-2 rounded-full text-sm font-bold shadow-sm dark:shadow-none">
-           <Sparkles className="w-4 h-4" /> READY TO APPLY
-        </span>
+      <span className="inline-flex items-center gap-2 bg-stone-100 text-stone-700 dark:bg-stone-800/60 dark:text-stone-200 dark:border dark:border-stone-700 px-5 py-2 rounded-full text-sm font-bold shadow-sm dark:shadow-none whitespace-nowrap">
+        {responseLabel}
+      </span>
     );
   };
 
@@ -107,8 +116,9 @@ const JobDetail: React.FC<JobDetailProps> = ({ job, onBack, onSendToSpreadsheet,
         <h2 className="text-xl sm:text-2xl text-stone-500 dark:text-stone-400 font-bold tracking-wide uppercase text-xs">{job.company}</h2>
 
         {/* Status Badge */}
-        <div className="mt-6">
-          {getStatusBadge()}
+        <div className="mt-6 flex items-center justify-center gap-3 flex-nowrap overflow-hidden max-w-full">
+          {getApplicationBadge()}
+          {getResponseBadge()}
         </div>
       </div>
 
@@ -121,7 +131,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ job, onBack, onSendToSpreadsheet,
             href={job.postingLink} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="bg-stone-800 dark:bg-stone-200 hover:bg-stone-700 dark:hover:bg-white text-white dark:text-stone-900 px-8 py-4 rounded-2xl font-bold shadow-lg shadow-stone-200 dark:shadow-none hover:shadow-xl dark:hover:shadow-none transition-all flex items-center gap-2 transform hover:-translate-y-1"
+            className="bg-cozy-paper dark:bg-stone-800/40 hover:bg-white dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 px-8 py-4 rounded-2xl font-bold shadow-soft dark:shadow-none hover:shadow-lg dark:hover:shadow-none transition-all flex items-center gap-2 transform hover:-translate-y-1 border border-cozy-border/70 dark:border-cozy-border"
           >
             <span>APPLY NOW</span>
             <ExternalLink className="w-5 h-5" />
@@ -143,6 +153,16 @@ const JobDetail: React.FC<JobDetailProps> = ({ job, onBack, onSendToSpreadsheet,
             </div>
 
             <div className="flex items-center gap-4 text-stone-600 dark:text-stone-300 group">
+              <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-stone-800 group-hover:bg-amber-100 dark:group-hover:bg-stone-700 transition-colors flex items-center justify-center text-amber-500 dark:text-stone-400 shadow-sm dark:shadow-none border border-amber-100 dark:border-stone-700">
+                <Calendar className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-xs text-stone-400 dark:text-stone-500 uppercase font-bold tracking-wide mb-1">Date Applied</p>
+                <p className="text-lg font-bold text-stone-700 dark:text-stone-200 font-hand text-2xl">{job.dateApplied || 'Not applied yet'}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 text-stone-600 dark:text-stone-300 group">
               <div className="w-12 h-12 rounded-2xl bg-green-50 dark:bg-stone-800 group-hover:bg-green-100 dark:group-hover:bg-stone-700 transition-colors flex items-center justify-center text-green-500 dark:text-stone-400 shadow-sm dark:shadow-none border border-green-100 dark:border-stone-700">
                 <DollarSign className="w-6 h-6" />
               </div>
@@ -152,15 +172,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ job, onBack, onSendToSpreadsheet,
               </div>
             </div>
 
-            <div className="flex items-center gap-4 text-stone-600 dark:text-stone-300 group">
-               <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-stone-800 group-hover:bg-blue-100 dark:group-hover:bg-stone-700 transition-colors flex items-center justify-center text-blue-400 dark:text-stone-400 shadow-sm dark:shadow-none border border-blue-100 dark:border-stone-700">
-                <Calendar className="w-6 h-6" />
-              </div>
-              <div>
-                <p className="text-xs text-stone-400 dark:text-stone-500 uppercase font-bold tracking-wide mb-1">Date Posted</p>
-                <p className="text-lg font-bold text-stone-700 dark:text-stone-200 font-hand text-2xl">{job.datePosted}</p>
-              </div>
-            </div>
+            
           </div>
 
           <div className="space-y-8">
@@ -229,24 +241,19 @@ const JobDetail: React.FC<JobDetailProps> = ({ job, onBack, onSendToSpreadsheet,
         </div>
 
         {/* Footer Actions */}
-        <div className="mt-auto border-t border-stone-100 dark:border-stone-800 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="text-stone-400 dark:text-stone-500 text-sm italic flex items-center gap-2">
-             <span className="w-2 h-2 rounded-full bg-stone-300 dark:bg-stone-600"></span>
-             Response: {job.response || 'Waiting for response...'}
-          </div>
-
+        <div className="mt-auto border-t border-stone-100 dark:border-stone-800 pt-8 flex flex-col sm:flex-row items-center justify-end gap-4">
           <button
             onClick={() => onSendToSpreadsheet(job)}
             disabled={loading || job.applied === 'yes'}
             className={`w-full sm:w-auto px-8 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-md dark:shadow-none ${
               job.applied === 'yes' 
                 ? 'bg-stone-50 dark:bg-stone-800 text-stone-300 dark:text-stone-600 cursor-not-allowed border border-stone-100 dark:border-stone-800'
-                : 'bg-cozy-sage/50 dark:bg-stone-800 text-cozy-sageDark dark:text-stone-300 hover:bg-cozy-sage dark:hover:bg-stone-700 hover:shadow-lg dark:hover:shadow-none hover:-translate-y-1'
+                : 'bg-cozy-sage/60 dark:bg-stone-800/40 text-cozy-sageDark dark:text-stone-200 hover:bg-cozy-sage/80 dark:hover:bg-stone-700 hover:shadow-lg dark:hover:shadow-none hover:-translate-y-1 border border-cozy-border/70 dark:border-cozy-border'
             }`}
           >
             {loading ? 'Updating...' : (
               <>
-                <span>{job.applied === 'yes' ? 'Synced to Spreadsheet' : 'SEND TO SPREADSHEET'}</span>
+                <span>{job.applied === 'yes' ? 'Already Applied' : 'MARK AS APPLIED'}</span>
               </>
             )}
           </button>
