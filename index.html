@@ -3,10 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cozy Job Board</title>
+    <title>Job Board</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Patrick+Hand&display=swap" rel="stylesheet">
     <style>
+      @font-face {
+        font-family: 'Stampatello Faceto';
+        src: url('fonts/StampatelloFaceto.otf') format('opentype');
+        font-display: swap;
+      }
+
       :root {
         --cozy-bg: #FDFBF7;
         --cozy-card: #FFFFFF;
@@ -17,17 +23,18 @@
       }
       /* Dark Mode: Deep, matte earth tones. Cozy Night Theme. */
       .dark {
-        --cozy-bg: #120F0D; /* Very dark warm espresso */
-        --cozy-card: #1C1917; /* Warm dark charcoal */
-        --cozy-text: #E7E5E4; /* Warm Stone 200 */
-        --cozy-primary: #A8A29E; /* Stone 400 */
-        --cozy-paper: #1C1917; /* Seamless card look */
-        --cozy-border: #352F2B; /* Subtle warm border */
+        --cozy-bg: #15110F;
+        --cozy-card: #221B17;
+        --cozy-text: #F3EEE8;
+        --cozy-primary: #CBBFB5;
+        --cozy-paper: #1D1714;
+        --cozy-border: #3B312B;
       }
       
       body {
         background-color: var(--cozy-bg);
         color: var(--cozy-text);
+        font-family: 'Stampatello Faceto', 'Quicksand', sans-serif;
         transition: background-color 0.3s, color 0.3s;
         position: relative;
       }
@@ -62,7 +69,7 @@
         border-radius: 4px;
       }
       .dark ::-webkit-scrollbar-thumb {
-        background: #44403c;
+        background: #4A3F38;
       }
     </style>
     <script>
@@ -71,8 +78,8 @@
         theme: {
           extend: {
             fontFamily: {
-              sans: ['Quicksand', 'sans-serif'],
-              hand: ['Patrick Hand', 'cursive'],
+              sans: ['Stampatello Faceto', 'Quicksand', 'sans-serif'],
+              hand: ['Stampatello Faceto', 'Patrick Hand', 'cursive'],
             },
             colors: {
               cozy: {

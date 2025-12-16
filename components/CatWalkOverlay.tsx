@@ -38,7 +38,7 @@ const CatWalkOverlay: React.FC = () => {
 
       const startLeft = -catWidth - 20;
       const endLeft = window.innerWidth + catWidth + 20;
-      const speedPxPerSec = 340;
+      const speedPxPerSec = 220;
       const durationMs = Math.max(1200, Math.round(((endLeft - startLeft) / speedPxPerSec) * 1000));
 
       const id = `${now}-${Math.random().toString(16).slice(2)}`;
