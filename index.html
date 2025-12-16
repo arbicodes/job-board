@@ -7,6 +7,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Patrick+Hand&display=swap" rel="stylesheet">
     <style>
+      @font-face {
+        font-family: 'Cozy Space';
+        src: url('fonts/CozySpace.otf') format('opentype');
+        font-display: swap;
+      }
+
       :root {
         --cozy-bg: #FDFBF7;
         --cozy-card: #FFFFFF;
@@ -28,6 +34,7 @@
       body {
         background-color: var(--cozy-bg);
         color: var(--cozy-text);
+        font-family: 'Cozy Space', 'Quicksand', sans-serif;
         transition: background-color 0.3s, color 0.3s;
         position: relative;
       }
@@ -71,8 +78,8 @@
         theme: {
           extend: {
             fontFamily: {
-              sans: ['Quicksand', 'sans-serif'],
-              hand: ['Patrick Hand', 'cursive'],
+              sans: ['Cozy Space', 'Quicksand', 'sans-serif'],
+              hand: ['Cozy Space', 'Patrick Hand', 'cursive'],
             },
             colors: {
               cozy: {
@@ -113,7 +120,7 @@
   }
 }
 </script>
-  <script type="module" crossorigin src="/job-board/assets/index-CTKAeIGQ.js"></script>
+  <script type="module" crossorigin src="/job-board/assets/index-CawGzS9S.js"></script>
 </head>
   <body>
     <div id="root"></div>
