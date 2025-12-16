@@ -1,6 +1,7 @@
 {
   "name": "job-board",
   "private": true,
+  "homepage": "https://arbicodes.github.io/job-board/",
   "version": "0.1.0",
   "type": "module",
   "scripts": {
