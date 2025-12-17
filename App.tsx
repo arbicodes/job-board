@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Job, ViewState } from './types';
 import { GOOGLE_SCRIPT_URL } from './constants';
 import { fetchJobsFromSheet, postJobToSheet, updateJobInSheet, deleteJobFromSheet, generateJobId, formatBenefitsForSheet } from './services/sheets.ts';
@@ -30,6 +30,9 @@ const App: React.FC = () => {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastVariant, setToastVariant] = useState<'success' | 'error'>('success');
 
+  const historyInitializedRef = useRef(false);
+  const jobsRef = useRef<Job[]>([]);
+
   // Dark Mode Effect
   useEffect(() => {
     if (darkMode) {
@@ -44,6 +47,52 @@ const App: React.FC = () => {
   useEffect(() => {
     loadJobs();
   }, []);
+
+  useEffect(() => {
+    jobsRef.current = jobs;
+  }, [jobs]);
+
+  useEffect(() => {
+    if (historyInitializedRef.current) return;
+    historyInitializedRef.current = true;
+
+    const state = window.history.state;
+    if (!state || (state.view !== 'LIST' && state.view !== 'DETAIL')) {
+      window.history.replaceState({ view: 'LIST' }, '', window.location.href);
+    }
+
+    const onPopState = (e: PopStateEvent) => {
+      const next = e.state;
+      if (next?.view === 'DETAIL' && typeof next.jobId === 'string') {
+        const job = jobsRef.current.find(j => j.id === next.jobId);
+        if (job) {
+          setSelectedJob(job);
+          setView('DETAIL');
+          window.scrollTo(0, 0);
+          return;
+        }
+      }
+
+      setSelectedJob(null);
+      setView('LIST');
+    };
+
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
+  const openJobDetail = (job: Job) => {
+    setSelectedJob(job);
+    setView('DETAIL');
+    window.history.pushState({ view: 'DETAIL', jobId: job.id }, '', window.location.href);
+    window.scrollTo(0, 0);
+  };
+
+  const goToList = () => {
+    setSelectedJob(null);
+    setView('LIST');
+    window.history.replaceState({ view: 'LIST' }, '', window.location.href);
+  };
 
   const refreshJobsFromSheet = async () => {
     const fetchedJobs = await fetchJobsFromSheet(GOOGLE_SCRIPT_URL);
@@ -300,9 +349,7 @@ const App: React.FC = () => {
                     key={job.id}
                     job={job}
                     onClick={() => {
-                      setSelectedJob(job);
-                      setView('DETAIL');
-                      window.scrollTo(0,0);
+                      openJobDetail(job);
                     }}
                     onEdit={handleEditJobClick}
                     onDelete={handleDeleteJobClick}
@@ -315,7 +362,13 @@ const App: React.FC = () => {
           selectedJob && (
             <JobDetail
               job={selectedJob}
-              onBack={() => setView('LIST')}
+              onBack={() => {
+                if (window.history.state?.view === 'DETAIL') {
+                  window.history.back();
+                } else {
+                  goToList();
+                }
+              }}
               onSendToSpreadsheet={handleSendToSpreadsheet}
               onUpdate={handleUpdateJobDirectly}
               loading={loading}
